@@ -58,3 +58,4 @@ if __name__ == '__main__':
                        depth=DEPTH, num_classes=NUM_CLASSES)
     new_model.compile()
     new_model.summary()
+    new_model.train(x_train, y_train, BATCH_SIZE, EPOCHS, (x_test, y_test))
