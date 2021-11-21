@@ -4,6 +4,8 @@ from tensorflow.keras.regularizers import l2
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import LearningRateScheduler, ReduceLROnPlateau
 import numpy as np
+import os
+import pickle
 
 
 class ResNet():
@@ -101,3 +103,39 @@ class ResNet():
 
     def summary(self):
         self.model.summary()
+
+    def save(self, path='.'):
+        self._create_directory_if_it_doesnt_exist(path)
+        self._save_parameters(path)
+        self._save_weights(path)
+
+    def _create_directory_if_it_doesnt_exist(self, path):
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+    def _save_parameters(self, path):
+        parameters = [
+            self.input_shape,
+            self.depth,
+            self.num_classes
+        ]
+        save_path = os.path.join(path, 'parameters.pkl')
+        with open(save_path, 'wb') as f:
+            pickle.dump(parameters, f)
+
+    def _save_weights(self, path):
+        save_path = os.path.join(path, 'weights.h5')
+        self.model.save_weights(save_path)
+
+    @classmethod
+    def load(cls, path='.'):
+        parameters_path = os.path.join(path, 'parameters.pkl')
+        with open(parameters_path, 'rb') as f:
+            parameters = pickle.load(f)
+        resnet = ResNet(*parameters)
+        weights_path = os.path.join(path, 'weights.h5')
+        resnet.load_weights(weights_path)
+        return resnet
+
+    def load_weights(self, path):
+        self.model.load_weights(path)
