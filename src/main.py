@@ -2,16 +2,17 @@ from six.moves import cPickle
 from tensorflow.keras.datasets import cifar10
 import matplotlib.pyplot as plt
 import numpy as np
-from resnet_working import ResNet
 from resnet import ResNet
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.callbacks import LearningRateScheduler, ReduceLROnPlateau
+import numpy as np
 
 ROWS = 10
 
 
 BATCH_SIZE = 32
-EPOCHS = 100
+EPOCHS = 1
 USE_AUGMENTATION = True
 NUM_CLASSES = 10
 COLORS = 3
@@ -53,10 +54,7 @@ if __name__ == '__main__':
     y_train = to_categorical(y_train, NUM_CLASSES)
     y_test = to_categorical(y_test, NUM_CLASSES)
 
-    # Create the neural network
-    model = ResNet.resnet_v2(input_shape=input_shape, depth=DEPTH)
-
-    model.compile(loss='categorical_crossentropy',
-                  optimizer=Adam(lr=ResNet.learning_rate_schedule(0)),
-                  metrics=['accuracy'])
-    model.summary()
+    new_model = ResNet(input_shape=input_shape,
+                       depth=DEPTH, num_classes=NUM_CLASSES)
+    new_model.compile()
+    new_model.summary()

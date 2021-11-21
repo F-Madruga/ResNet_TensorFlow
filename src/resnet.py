@@ -1,7 +1,9 @@
 from tensorflow.keras.layers import Conv2D, BatchNormalization, Activation, Input, BatchNormalization, Activation, AveragePooling2D, Flatten, Dense, add
 from tensorflow.keras.models import Model
 from tensorflow.keras.regularizers import l2
-from tensorflow.python.keras.backend import batch_normalization
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.callbacks import LearningRateScheduler, ReduceLROnPlateau
+import numpy as np
 
 
 class ResNet():
@@ -12,8 +14,7 @@ class ResNet():
         self.model = None
         self._build()
 
-    @classmethod
-    def learning_rate_schedule(cls, epoch):
+    def learning_rate_schedule(self, epoch):
         lr = 1e-3
         if epoch > 180:
             lr *= 0.5e-3
@@ -50,7 +51,7 @@ class ResNet():
                         strides = 2
                 y = self._resnet_layer(inputs=x, num_filters=num_filters_in, kernel_size=1, strides=strides,
                                        activation=activation, batch_normalization=batch_normalization, conv_first=False)
-                y = self._.resnet_layer(
+                y = self._resnet_layer(
                     inputs=y, num_filters=num_filters_in, conv_first=False)
                 y = self._resnet_layer(
                     inputs=y, num_filters=num_filters_out, kernel_size=1, conv_first=False)
@@ -85,6 +86,18 @@ class ResNet():
                 x = Activation(activation)(x)
             x = conv(x)
         return x
+
+    def compile(self):
+        self.model.compile(loss='categorical_crossentropy', optimizer=Adam(
+            lr=self.learning_rate_schedule(0)), metrics=['accuracy'])
+
+    def train(self, x_train, y_train, batch_size, num_epochs, val_data=None, shuffle=True):
+        lr_scheduler = LearningRateScheduler(self.learning_rate_schedule)
+        lr_reducer = ReduceLROnPlateau(factor=np.sqrt(
+            0.1), cooldown=0, patience=5, min_lr=0.5e-6)
+        callbacks = [lr_reducer, lr_scheduler]
+        self.model.fit(x_train, y_train, batch_size=batch_size, epochs=num_epochs,
+                       validation_data=val_data, shuffle=shuffle, callbacks=callbacks)
 
     def summary(self):
         self.model.summary()
