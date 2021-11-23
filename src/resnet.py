@@ -98,8 +98,8 @@ class ResNet():
         lr_reducer = ReduceLROnPlateau(factor=np.sqrt(
             0.1), cooldown=0, patience=5, min_lr=0.5e-6)
         callbacks = [lr_reducer, lr_scheduler]
-        self.model.fit(x_train, y_train, batch_size=batch_size, epochs=num_epochs,
-                       validation_data=val_data, shuffle=shuffle, callbacks=callbacks)
+        return self.model.fit(x_train, y_train, batch_size=batch_size, epochs=num_epochs,
+                              validation_data=val_data, shuffle=shuffle, callbacks=callbacks)
 
     def summary(self):
         self.model.summary()
